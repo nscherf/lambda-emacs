@@ -230,6 +230,79 @@
 
 ;; (org-babel-jupyter-override-src-block "python")
 
+;;;; org setup
+(setq org-capture-templates
+      ;; Note the ` and , to get concat to evaluate properly
+      `(("c" "Capture" entry (file ,(concat org-directory "inbox.org"))
+         "* TODO %?\n %i" :empty-lines 1)
+
+        ("j" "Journal" entry (file+olp+datetree ,(concat org-directory "journal.org"))
+         "**** %<%H:%M>\n%?" :empty-lines 1)
+
+        ("l" "A link, for reading later" entry (file ,(concat org-directory "inbox.org"))
+         "* %? :link: \n%(grab-mac-link 'safari 'org)"  :empty-lines 1)
+
+        ("r" "Reference" entry (file ,(concat org-directory "reference.org"))
+         "* %?"  :empty-lines 1)
+
+        ("w" "Review: Weekly Review" entry (file+datetree ,(concat org-directory "reviews.org"))
+         (file ,(concat org-directory "templates/weekly_review_template.org")))
+
+        ("R" "Referee report" entry (file+datetree ,(concat org-directory "referee-reports.org"))
+         (file ,(concat org-directory "templates/referee-report-template.org")))))
+
+;; Add date to captured items
+(defun add-property-with-date-captured ()
+  "Add DATE_CAPTURED property to the current item."
+  (interactive)
+  (org-set-property "DATE_CAPTURED" (format-time-string "%F %A")))
+
+(add-hook 'org-capture-before-finalize-hook 'add-property-with-date-captured)
+
+;; Add newline to captured items
+(defun lem-org-capture-newlines-at-end ()
+  (goto-char (point-max))
+  (insert "\n\n"))
+(add-hook 'org-capture-prepare-finalize 'lem-org-capture-newlines-at-end)
+
+;;;; Org Journal Capture
+;; Tell emacs what you're doing a few times a day. Depends on a
+;; [[/Users/roambot/bin/scripts/emacs_journal.sh][shell script]] run in the
+;; background. I got the idea from
+;; [[http://www.diegoberrocal.com/blog/2015/08/19/org-protocol/][Diego Berrocal]].
+;; Hat tip to
+;; [[http://stackoverflow.com/questions/23517372/hook-or-advice-when-aborting-org-capture-before-template-selection][stack
+;; overflow]] for help on hooks for the created frame.
+
+(defun lem-org-journal ()
+  (interactive) (org-capture nil "j"))
+
+;;; Org Indirect Buffer
+(setq org-indirect-buffer-display 'current-window)
+;; Some advice to automatically switch to a new indirect buffer upon creation
+(defadvice org-tree-to-indirect-buffer (after org-tree-to-indirect-buffer-after activate) (other-window 1))
+
+
+;;; Org Entities
+(setq org-entities-user
+      '(("nec" "\Box" nil "◻" "" "" "◻")
+        ("pos" "\Diamond" nil "◇" "" "" "◇")
+        ("space" "~" nil "&nbsp;" " " " " " ")))
+
+;;; Org Tags
+(setq org-tag-alist '((:startgrouptag)
+                      ("@computer" . ?c)
+                      (:grouptags)
+                      ("emacs" . ?m)
+                      (:endgrouptag)
+                      ("@errand" . ?e)
+                      ("@phone" . ?p)
+                      ("@cbs" . ?s)
+                      ("email")
+                      ("postal-mail")
+                      ("@home" . ?h)))
+(setq org-fast-tag-selection-single-key t)
+
 ;;; Provide
 (provide 'config)
 ;;; config.el ends here
