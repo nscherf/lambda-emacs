@@ -191,6 +191,7 @@
 
 ;;;; User Functions
 ;; Put any custom user functions here.
+(setq denote-known-keywords '("emacs" "teaching" "cbs" "neurds" "workbook" "zk"))
 
 (setq lem-bibliography "~/Documents/03-resources/bibliography.bib")
 (setq lem-citar-note "Notes on ${author editor}, ${title}")
@@ -220,6 +221,13 @@
   :init
   (setq jupyter-eval-use-overlays t))
 
+(use-package orderless
+  :straight t
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+
 ;; (org-babel-do-load-languages
 ;;  'org-babel-load-languages
 ;;  '((emacs-lisp . t) ;; Other languages
@@ -244,6 +252,9 @@
 
         ("r" "Reference" entry (file ,(concat org-directory "reference.org"))
          "* %?"  :empty-lines 1)
+
+        ("g" "Goal" entry (file, (concat org-directory "goals.org"))
+         "*** %?" :Empty-lines 1)
 
         ("w" "Review: Weekly Review" entry (file+datetree ,(concat org-directory "reviews.org"))
          (file ,(concat org-directory "templates/weekly_review_template.org")))
