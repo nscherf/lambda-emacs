@@ -242,8 +242,8 @@
             (next-line)
             (insert-char ?\s 11)
             (insert-text-button (concat (all-the-icons-octicon "git-branch") isep "Projects" ksep "(p)")
-                                'action (lambda (_)  (tabspaces-open-existing-project-and-workspace))
-                                'help-echo "Open project & workspace"
+                                'action (lambda (_) (lem-goto-projects))
+                                'help-echo "Open project directory"
                                 'face 'lem-splash-menu-face
                                 'follow-link t)
 
@@ -286,7 +286,7 @@
     (define-key map (kbd "c") 'lem-open-emacsd-in-workspace)
     (define-key map (kbd "m") 'lem-open-email-in-workspace)
     (define-key map (kbd "n") 'lem-open-notes-in-workspace)
-    (define-key map (kbd "p") 'lem-open-existing-project-and-workspace)
+    (define-key map (kbd "p") 'lem-goto-projects)
     (define-key map (kbd "q") 'lem-splash-screen-kill)
     (define-key map (kbd "esc") 'lem-splash-screen-bury)
     (define-key map (kbd "k") 'lem-splash-screen-kill)
