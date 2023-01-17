@@ -38,17 +38,19 @@
 ;; Denote settings
 (customize-set-variable 'lem-notes-dir (concat (getenv "HOME") "/Documents/03-resources/notes/"))
 (customize-set-variable 'denote-directory lem-notes-dir)
-(customize-set-variable 'denote-known-keywords '("emacs" "teaching" "neurds" "workbook" "zettel" "reference"))
+(customize-set-variable 'denote-known-keywords '("zettel" "reference"))
 (customize-set-variable 'denote-prompts '(title keywords subdirectory))
 
 (setq consult-notes-sources
       `(("Zettel"          ?z ,(concat lem-notes-dir "zettel/"))
-        ("Lecture Notes"   ?l ,(concat lem-notes-dir "lecture-notes/"))
+        ;;("Lecture Notes"   ?l ,(concat lem-notes-dir "lecture-notes/"))
         ("Reference Notes" ?r ,(concat lem-notes-dir "ref-notes/"))
-        ("Org"             ?o "~/Documents/03-resources/org/")
-        ("Workbook"        ?w ,(concat lem-notes-dir "workbook/"))
-        ("Refile"          ?R ,(concat lem-notes-dir "refile-notes/"))))
-
+        ;;        ("Org"             ?o "~/Documents/03-resources/org/")
+        ("Org-Roam"        ?R "~/Documents/03-resources/org/pages/")
+        ("Journal"         ?j "~/Documents/03-resources/org/journals/")
+        ;;("Workbook"        ?w ,(concat lem-notes-dir "workbook/"))
+        ;;("Refile"          ?R ,(concat lem-notes-dir "refile-notes/"))
+        ))
 
 ;;;;; Set Fonts
 ;; Set fonts
@@ -64,7 +66,7 @@
 
 ;;;;; Org Directories
 ;; Set these if you're using org
-(setq org-directory "~/Documents/03-resources/org/"
+(setq org-directory "~/Documents/03-resources/org/pages/"
       org-default-notes-file (concat org-directory "inbox.org")
       org-agenda-files (list org-directory))
 
@@ -196,7 +198,6 @@
 (setq lem-bibliography "~/Documents/03-resources/bibliography.bib")
 (setq lem-citar-note "Notes on ${author editor}, ${title}")
 (setq lem-bib-notes "~/Documents/03-resources/notes/ref-notes/")
-
 (setq lem-project-dir "~/Documents/01-projects/")
 
 (straight-use-package 'somafm)
@@ -364,25 +365,33 @@
 
 (use-package org-roam
   :diminish
-  ;; :bind (("C-c n a" . org-id-get-create)
-  ;;        ("C-c n l" . org-roam-buffer-toggle)
-  ;;        ("C-c n f" . org-roam-node-find)
-  ;;        ("C-c n g" . org-roam-graph)
-  ;;        ("C-c n i" . org-roam-node-insert)
-  ;;        ("C-c n c" . org-roam-capture)
-  ;;        ("C-c n j" . org-roam-dailies-capture-today)
-  ;;        ("C-c n r" . org-roam-ref-find)
-  ;;        ("C-c n R" . org-roam-ref-add)
-  ;;        ("C-c n s" . org-roam-db-sync))
+  :bind (("C-c n a" .1 org-id-get-create)
+         ("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+         ("C-c n j" . org-roam-dailies-capture-today)
+         ("C-c n r" . org-roam-ref-find)
+         ("C-c n R" . org-roam-ref-add)
+         ("C-c n s" . org-roam-db-sync))
   :custom
   (org-roam-database-connector 'sqlite-builtin)
   :init
-  (setq org-roam-directory (file-truename "~/Documents/03-resources/notes/zettelkasten")
-        org-roam-db-location "~/Documents/03-resources/notes/org-roam.db"
+  (setq org-roam-directory (file-truename "~/Documents/03-resources/org")
+        org-roam-db-location "~/Documents/03-resources/org/org-roam.db"
         org-roam-db-gc-threshold most-positive-fixnum
         org-roam-v2-ack t)
   (unless (file-exists-p org-roam-directory)
     (make-directory org-roam-directory t))
+  :custom
+  (org-roam-directory "<path to logseq root>")
+  (org-roam-dailies-directory "journals/")
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?" :target
+      (file+head "pages/${slug}.org" "#+title: ${title}\n")
+      :unnarrowed t)))
   :config
   (org-roam-db-autosync-enable)
   (add-to-list 'display-buffer-alist
