@@ -38,7 +38,7 @@
 ;; Denote settings
 (customize-set-variable 'lem-notes-dir (concat (getenv "HOME") "/Documents/03-resources/notes/"))
 (customize-set-variable 'denote-directory lem-notes-dir)
-(customize-set-variable 'denote-known-keywords '("emacs" "teaching" "cbs" "neurds" "workbook"))
+(customize-set-variable 'denote-known-keywords '("emacs" "teaching" "neurds" "workbook" "zettel" "reference"))
 (customize-set-variable 'denote-prompts '(title keywords subdirectory))
 
 (setq consult-notes-sources
@@ -197,6 +197,8 @@
 (setq lem-citar-note "Notes on ${author editor}, ${title}")
 (setq lem-bib-notes "~/Documents/03-resources/notes/ref-notes/")
 
+(setq lem-project-dir "~/Documents/01-projects/")
+
 (straight-use-package 'somafm)
 (require 'somafm)
 
@@ -237,6 +239,49 @@
 ;;    (jupyter . t)))
 
 ;; (org-babel-jupyter-override-src-block "python")
+
+;;;; grammar and style
+(use-package languagetool
+  :straight t
+  :ensure t
+  :defer t
+  :commands (languagetool-check
+             languagetool-clear-suggestions
+             languagetool-correct-at-point
+             languagetool-correct-buffer
+             languagetool-set-language
+             languagetool-server-mode
+             languagetool-server-start
+             languagetool-server-stop)
+  :config
+  (setq languagetool-java-arguments '("-Dfile.encoding=UTF-8")
+        languagetool-console-command "/usr/local/Cellar/languagetool/6.0/libexec/languagetool-commandline.jar"
+        languagetool-server-command "/usr/local/Cellar/languagetool/6.0/libexec/languagetool-server.jar"))
+
+(use-package flycheck
+  :straight t
+  :ensure t
+  :init (global-flycheck-mode))
+
+(flycheck-define-checker proselint
+                         "A linter for prose."
+                         :command ("proselint" source-inplace)
+                         :error-patterns
+                         ((warning line-start (file-name) ":" line ":" column ": "
+	                               (id (one-or-more (not (any " "))))
+	                               (message) line-end))
+                         :modes (org-mode text-mode markdown-mode gfm-mode))
+
+(add-to-list 'flycheck-checkers 'proselint)
+
+(use-package writegood-mode
+  :straight t
+  :ensure t
+  :defer t
+  :commands (writegood-mode
+             writegood-grade-level
+             writegood-reading-ease))
+
 
 ;;;; org setup
 (setq org-capture-templates
@@ -313,6 +358,111 @@
                       ("postal-mail")
                       ("@home" . ?h)))
 (setq org-fast-tag-selection-single-key t)
+
+(use-package emacsql-sqlite-builtin
+  :straight t)
+
+(use-package org-roam
+  :diminish
+  ;; :bind (("C-c n a" . org-id-get-create)
+  ;;        ("C-c n l" . org-roam-buffer-toggle)
+  ;;        ("C-c n f" . org-roam-node-find)
+  ;;        ("C-c n g" . org-roam-graph)
+  ;;        ("C-c n i" . org-roam-node-insert)
+  ;;        ("C-c n c" . org-roam-capture)
+  ;;        ("C-c n j" . org-roam-dailies-capture-today)
+  ;;        ("C-c n r" . org-roam-ref-find)
+  ;;        ("C-c n R" . org-roam-ref-add)
+  ;;        ("C-c n s" . org-roam-db-sync))
+  :custom
+  (org-roam-database-connector 'sqlite-builtin)
+  :init
+  (setq org-roam-directory (file-truename "~/Documents/03-resources/notes/zettelkasten")
+        org-roam-db-location "~/Documents/03-resources/notes/org-roam.db"
+        org-roam-db-gc-threshold most-positive-fixnum
+        org-roam-v2-ack t)
+  (unless (file-exists-p org-roam-directory)
+    (make-directory org-roam-directory t))
+  :config
+  (org-roam-db-autosync-enable)
+  (add-to-list 'display-buffer-alist
+               '("\\*org-roam\\*"
+                 (display-buffer-in-direction)
+                 (direction . right)
+                 (window-width . 0.33)
+                 (window-height . fit-window-to-buffer))))
+
+(use-package org-roam-ui
+  :straight
+  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :after org-roam
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
+
+(use-package citar-org-roam
+  :straight t
+  :after citar org-roam
+  :no-require
+  :config (citar-org-roam-mode))
+
+;; (defun citar-org-format-note-default (key entry)
+;;   "Format a note from KEY and ENTRY."
+;;   (let* ((template (citar--get-template 'note))
+;;          (note-meta (when template
+;;                       (citar-format--entry template entry)))
+;;          (filepath (expand-file-name
+;;                     (concat key ".org")
+;;                     (car citar-notes-paths)))
+;;          (buffer (find-file filepath)))
+;;     (with-current-buffer buffer
+;;       ;; This just overrides other template insertion.
+;;       (erase-buffer)
+;;       (citar-org-roam-make-preamble key)
+;;       (insert "#+title: ")
+;;       (when template (insert note-meta))
+;;       (insert "\n\n|\n\n#+print_bibliography:")
+;;       (search-backward "|")
+;;       (delete-char 1)
+;;       (when (fboundp 'evil-insert)
+;;         (evil-insert 1)))))
+
+(setq  org-cite-csl-styles-dir "~/Zotero/styles")
+
+(use-package org-roam-bibtex
+  :straight t
+  :after org-roam
+  :config
+  (setq
+   orb-preformat-keywords
+   '("citekey" "title" "url" "author-or-editor" "keywords" "file")
+   orb-process-file-keyword t
+   orb-file-field-extensions '("pdf")
+   orb-roam-ref-format 'org-ref
+   orb-insert-follow-link t)
+  )
+
+;; ;;try if this solves the projects issue
+;; (use-package tabspaces
+;;   ;; use this next line only if you also use straight, otherwise ignore it.
+;;   :straight (:type git :host github :repo "mclear-tools/tabspaces")
+;;   :hook (after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup.
+;;   :commands (tabspaces-switch-or-create-workspace
+;;              tabspaces-open-or-create-project-and-workspace)
+;;   :custom
+;;   (tabspaces-use-filtered-buffers-as-default t)
+;;   (tabspaces-default-tab "Default")
+;;   (tabspaces-remove-to-default t)
+;;   (tabspaces-include-buffers '("*scratch*"))
+;;   ;; sessions
+;;   (tabspaces-session t)
+;;   (tabspaces-session-auto-restore t))
 
 ;;; Provide
 (provide 'config)
