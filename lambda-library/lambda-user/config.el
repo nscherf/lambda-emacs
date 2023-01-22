@@ -283,7 +283,16 @@
              writegood-grade-level
              writegood-reading-ease))
 
-
+(defun lem-open-notes-in-workspace ()
+  "Open notes dir in its own workspace"
+  (interactive)
+  (require 'tabspaces)
+  (if (member "Notes" (tabspaces--list-tabspaces))
+      (tab-bar-switch-to-tab "Notebook")
+    (progn
+      (tab-bar-new-tab)
+      (tab-bar-rename-tab "Notebook")
+      (org-roam-dailies-find-today))))
 ;;;; org setup
 (setq org-capture-templates
       ;; Note the ` and , to get concat to evaluate properly
@@ -365,16 +374,16 @@
 
 (use-package org-roam
   :diminish
-  :bind (("C-c n a" .1 org-id-get-create)
-         ("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n g" . org-roam-graph)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n c" . org-roam-capture)
-         ("C-c n j" . org-roam-dailies-capture-today)
-         ("C-c n r" . org-roam-ref-find)
-         ("C-c n R" . org-roam-ref-add)
-         ("C-c n s" . org-roam-db-sync))
+  ;; :bind (("C-c n a" .1 org-id-get-create)
+  ;;        ("C-c n l" . org-roam-buffer-toggle)
+  ;;        ("C-c n f" . org-roam-node-find)
+  ;;        ("C-c n g" . org-roam-graph)
+  ;;        ("C-c n i" . org-roam-node-insert)
+  ;;        ("C-c n c" . org-roam-capture)
+  ;;        ("C-c n j" . org-roam-dailies-capture-today)
+  ;;        ("C-c n r" . org-roam-ref-find)
+  ;;        ("C-c n R" . org-roam-ref-add)
+  ;;        ("C-c n s" . org-roam-db-sync))
   :custom
   (org-roam-database-connector 'sqlite-builtin)
   :init
@@ -385,12 +394,12 @@
   (unless (file-exists-p org-roam-directory)
     (make-directory org-roam-directory t))
   :custom
-  (org-roam-directory "<path to logseq root>")
+  (org-roam-directory "~/Documents/03-resources/org")
   (org-roam-dailies-directory "journals/")
   (org-roam-capture-templates
    '(("d" "default" plain
       "%?" :target
-      (file+head "pages/${slug}.org" "#+title: ${title}\n")
+      (file+head "pages/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
       :unnarrowed t)))
   :config
   (org-roam-db-autosync-enable)
@@ -456,6 +465,11 @@
    orb-roam-ref-format 'org-ref
    orb-insert-follow-link t)
   )
+
+(use-package org-excalidraw
+  :straight (:type git :host github :repo "wdavew/org-excalidraw")
+  :config
+  (setq org-excalidraw-directory "~/Documents/03-resources/org/assets/"))
 
 ;; ;;try if this solves the projects issue
 ;; (use-package tabspaces
