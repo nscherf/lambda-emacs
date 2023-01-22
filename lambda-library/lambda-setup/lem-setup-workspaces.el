@@ -94,16 +94,16 @@
 
 ;;;;; Open Notes in Workspace
 
-(defun lem-open-notes-in-workspace ()
-  "Open notes dir in its own workspace"
-  (interactive)
-  (require 'tabspaces)
-  (if (member "Notes" (tabspaces--list-tabspaces))
-      (tab-bar-switch-to-tab "Notes")
-    (progn
-      (tab-bar-new-tab)
-      (tab-bar-rename-tab "Notes")
-      (lem-notebook))))
+;; (defun lem-open-notes-in-workspace ()
+;;   "Open notes dir in its own workspace"
+;;   (interactive)
+;;   (require 'tabspaces)
+;;   (if (member "Notes" (tabspaces--list-tabspaces))
+;;       (tab-bar-switch-to-tab "Notes")
+;;     (progn
+;;       (tab-bar-new-tab)
+;;       (tab-bar-rename-tab "Notes")
+;;       (lem-notebook))))
 
 ;;;;; Eshell Workspace
 (defun lem-open-new-eshell-and-workspace ()
